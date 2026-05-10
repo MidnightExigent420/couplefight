@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}CoupleFight{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+  <nav class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-6">
+      <a href="{{ url_for('index') }}" class="font-bold text-lg text-rose-600">CoupleFight</a>
+      {% if current_user.is_authenticated %}
+        <a class="text-sm text-slate-700 hover:text-rose-600" href="{{ url_for('dashboard.home') }}">Dashboard</a>
+        <a class="text-sm text-slate-700 hover:text-rose-600" href="{{ url_for('spend.index') }}">Spend</a>
+        <a class="text-sm text-slate-700 hover:text-rose-600" href="{{ url_for('goals.index') }}">Goals</a>
+        <a class="text-sm text-slate-700 hover:text-rose-600" href="{{ url_for('tripwires.index') }}">Trip wires</a>
+      {% endif %}
+    </div>
+    <div class="flex items-center gap-4">
+      {% if current_user.is_authenticated %}
+        <span class="text-sm font-semibold text-amber-600" id="points-pill">★ {{ current_user.points or 0 }} pts</span>
+        <div class="relative">
+          <button id="bell-btn" class="relative p-2 rounded hover:bg-slate-100" aria-label="Notifications">
+            <span aria-hidden="true">🔔</span>
+            <span id="bell-count" class="hidden absolute -top-1 -right-1 bg-rose-600 text-white text-xs rounded-full px-1.5">0</span>
+          </button>
+          <div id="bell-drawer" class="hidden absolute right-0 mt-2 w-96 bg-white border border-slate-200 rounded shadow-lg z-50 max-h-[70vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-4 py-2 border-b">
+              <strong class="text-sm">Notifications</strong>
+              <button id="mark-all" class="text-xs text-rose-600 hover:underline">Mark all read</button>
+            </div>
+            <ul id="bell-list" class="divide-y"></ul>
+          </div>
+        </div>
+        <a class="text-sm text-slate-600 hover:text-rose-600" href="{{ url_for('auth.profile') }}">{{ current_user.email }}</a>
+        <form action="{{ url_for('auth.logout') }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="text-sm text-slate-500 hover:text-rose-600" type="submit">Log out</button>
+        </form>
+      {% else %}
+        <a class="text-sm" href="{{ url_for('auth.login') }}">Log in</a>
+        <a class="text-sm font-semibold text-rose-600" href="{{ url_for('auth.register') }}">Register</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto p-6">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="mb-3 px-4 py-2 rounded text-sm
+                    {% if cat == 'error' %}bg-rose-100 text-rose-800{% else %}bg-emerald-100 text-emerald-800{% endif %}">
+          {{ msg }}
+        </div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

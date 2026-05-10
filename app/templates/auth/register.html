@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "_macros.html" import form_errors %}
+{% block title %}Register · CoupleFight{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-6 rounded shadow-sm border">
+  <h1 class="text-2xl font-bold mb-4">Create your account</h1>
+  <form method="post" class="space-y-3">
+    {{ form.hidden_tag() }}
+    {% for f in [form.email, form.password, form.confirm, form.preferred_currency] %}
+      <div>
+        <label class="text-sm font-semibold">{{ f.label.text }}</label>
+        {{ f(class="mt-1 block w-full border rounded px-3 py-2") }}
+        {{ form_errors(f) }}
+      </div>
+    {% endfor %}
+    {{ form.submit(class="w-full bg-rose-600 text-white font-semibold py-2 rounded hover:bg-rose-700") }}
+  </form>
+</div>
+{% endblock %}

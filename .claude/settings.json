@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m venv .venv)",
+      "Bash(.venv/bin/pip install *)",
+      "Bash(.venv/bin/python -c \"from app import create_app; app=create_app\\(\\); print\\('OK', sorted\\([str\\(r\\) for r in app.url_map.iter_rules\\(\\)]\\)\\)\")",
+      "Bash(.venv/bin/flask --app run.py db init)",
+      "Bash(.venv/bin/flask --app run.py db migrate -m \"init\")",
+      "Bash(.venv/bin/flask --app run.py db upgrade)",
+      "Bash(.venv/bin/python -)"
+    ]
+  },
+  "enabledPlugins": {}
+}

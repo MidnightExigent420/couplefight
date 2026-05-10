@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_macros.html" import form_errors %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-6 rounded shadow-sm border">
+  <h1 class="text-2xl font-bold mb-4">Profile</h1>
+  <p class="text-sm text-slate-500 mb-4">{{ current_user.email }}</p>
+  <form method="post" class="space-y-3">
+    {{ form.hidden_tag() }}
+    <div>
+      <label class="text-sm font-semibold">{{ form.preferred_currency.label.text }}</label>
+      {{ form.preferred_currency(class="mt-1 block w-full border rounded px-3 py-2") }}
+      {{ form_errors(form.preferred_currency) }}
+    </div>
+    {{ form.submit(class="bg-rose-600 text-white font-semibold py-2 px-4 rounded hover:bg-rose-700") }}
+  </form>
+
+  {% if current_user.couple_group_id %}
+  <div class="mt-6 pt-6 border-t">
+    <p class="text-sm">You are in a couple group.</p>
+    <form method="post" action="{{ url_for('auth.leave_couple') }}" class="mt-2"
+          onsubmit="return confirm('Leave couple group? This does not delete data.');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="text-sm text-rose-600 hover:underline">Leave couple group</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

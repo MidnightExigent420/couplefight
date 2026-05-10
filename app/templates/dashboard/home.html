@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% from "_macros.html" import tier_badge, status_badge %}
+{% block content %}
+
+<div class="grid md:grid-cols-3 gap-4 mb-6">
+  <div class="bg-white p-5 rounded border shadow-sm">
+    <p class="text-xs uppercase text-slate-500">Points</p>
+    <p class="text-3xl font-bold text-amber-600">★ {{ current_user.points or 0 }}</p>
+    <p class="text-xs text-slate-500 mt-1">+10 per goal met or trip wire tripped</p>
+  </div>
+  <div class="bg-white p-5 rounded border shadow-sm">
+    <p class="text-xs uppercase text-slate-500">Display currency</p>
+    <p class="text-2xl font-bold">{{ current_user.preferred_currency }}</p>
+    <a class="text-xs text-rose-600 hover:underline" href="{{ url_for('auth.profile') }}">Change</a>
+  </div>
+  <div class="bg-white p-5 rounded border shadow-sm">
+    <p class="text-xs uppercase text-slate-500">Partner</p>
+    {% if partner %}
+      <p class="text-base font-semibold">{{ partner.email }}</p>
+      <p class="text-xs text-amber-600">★ {{ partner.points or 0 }} pts</p>
+    {% elif current_user.couple_group_id %}
+      <p class="text-sm">Waiting for partner.</p>
+      <p class="text-xs text-slate-500 break-all mt-1">Invite link:<br><a class="text-rose-600 hover:underline" href="{{ invite_url }}">{{ invite_url }}</a></p>
+    {% else %}
+      <form method="post" action="{{ url_for('auth.create_couple') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="text-sm bg-rose-600 text-white px-3 py-1.5 rounded hover:bg-rose-700">Create couple group</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+{% if current_user.couple_group_id %}
+<section class="bg-white p-5 rounded border shadow-sm mb-6">
+  <div class="flex items-center justify-between mb-3 flex-wrap gap-3">
+    <h2 class="text-lg font-bold">Spend visualisation</h2>
+    <select id="chart-pick" class="border rounded px-2 py-1 text-sm">
+      <option value="">Select goal or trip wire…</option>
+      {% if active_goals %}
+        <optgroup label="My goals">
+          {% for g in active_goals %}
+            <option value="goal:{{ g.id }}">{{ g.label }} ({{ g.start_date }} → {{ g.end_date }})</option>
+          {% endfor %}
+        </optgroup>
+      {% endif %}
+      {% if active_tripwires_against %}
+        <optgroup label="Trip wires against me">
+          {% for t in active_tripwires_against %}
+            <option value="tripwire:{{ t.id }}">{{ t.label }} ({{ t.start_date }} → {{ t.end_date }})</option>
+          {% endfor %}
+        </optgroup>
+      {% endif %}
+    </select>
+  </div>
+  <canvas id="spend-chart" height="120"></canvas>
+  <div id="replay-panel" class="hidden mt-4 flex items-center gap-3">
+    <button id="replay-prev" class="px-3 py-1 text-sm border rounded hover:bg-slate-100">← Prev</button>
+    <button id="replay-next" class="px-3 py-1 text-sm border rounded hover:bg-slate-100">Next →</button>
+    <button id="replay-reset" class="px-3 py-1 text-sm text-slate-500 hover:underline">Reset</button>
+    <span id="replay-day" class="text-sm font-mono text-slate-600"></span>
+  </div>
+  <p id="chart-empty" class="text-sm text-slate-500 mt-2">Pick a goal or trip wire to visualise cumulative spend.</p>
+</section>
+{% endif %}
+
+<div class="grid md:grid-cols-2 gap-4">
+  <section class="bg-white p-5 rounded border shadow-sm">
+    <h2 class="text-lg font-bold mb-3">My active goals</h2>
+    {% if active_goals %}
+      <ul class="space-y-2">
+        {% for g in active_goals %}
+        <li class="border rounded px-3 py-2 text-sm flex items-center justify-between">
+          <div>
+            <p class="font-semibold">{{ g.label }}</p>
+            <p class="text-xs text-slate-500">≤ {{ g.threshold }} {{ g.threshold_currency }} · {{ g.start_date }} → {{ g.end_date }}</p>
+          </div>
+          {{ tier_badge(g.tier) }}
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}<p class="text-sm text-slate-500">No active goals. <a class="text-rose-600" href="{{ url_for('goals.index') }}">Add one</a>.</p>{% endif %}
+  </section>
+
+  <section class="bg-white p-5 rounded border shadow-sm">
+    <h2 class="text-lg font-bold mb-3">Trip wires against me</h2>
+    {% if active_tripwires_against %}
+      <ul class="space-y-2">
+        {% for t in active_tripwires_against %}
+        <li class="border rounded px-3 py-2 text-sm flex items-center justify-between">
+          <div>
+            <p class="font-semibold">{{ t.label }}</p>
+            <p class="text-xs text-slate-500">> {{ t.threshold }} {{ t.threshold_currency }} · {{ t.start_date }} → {{ t.end_date }}</p>
+          </div>
+          {{ tier_badge(t.tier) }}
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}<p class="text-sm text-slate-500">None active.</p>{% endif %}
+  </section>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chart.js') }}"></script>
+{% endblock %}

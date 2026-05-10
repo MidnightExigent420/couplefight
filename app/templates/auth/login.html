@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import form_errors %}
+{% block title %}Log in · CoupleFight{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-6 rounded shadow-sm border">
+  <h1 class="text-2xl font-bold mb-4">Log in</h1>
+  <form method="post" class="space-y-3">
+    {{ form.hidden_tag() }}
+    <div>
+      <label class="text-sm font-semibold">{{ form.email.label.text }}</label>
+      {{ form.email(class="mt-1 block w-full border rounded px-3 py-2", autocomplete="email") }}
+      {{ form_errors(form.email) }}
+    </div>
+    <div>
+      <label class="text-sm font-semibold">{{ form.password.label.text }}</label>
+      {{ form.password(class="mt-1 block w-full border rounded px-3 py-2", autocomplete="current-password") }}
+      {{ form_errors(form.password) }}
+    </div>
+    {{ form.submit(class="w-full bg-rose-600 text-white font-semibold py-2 rounded hover:bg-rose-700") }}
+  </form>
+  <p class="text-sm mt-3 text-slate-600">No account? <a class="text-rose-600" href="{{ url_for('auth.register') }}">Register</a></p>
+</div>
+{% endblock %}
