@@ -19,7 +19,7 @@
       </div>
       <div>
         <label class="text-sm font-semibold">Date</label>
-        {{ form.date(class="mt-1 w-full border rounded px-3 py-2") }}
+        {{ form.date(class="mt-1 w-full border rounded px-3 py-2", max=today_iso) }}
         {{ form_errors(form.date) }}
       </div>
       <div>

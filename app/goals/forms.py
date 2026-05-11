@@ -7,7 +7,13 @@ from wtforms.validators import DataRequired, Length, NumberRange, AnyOf, Optiona
 from ..auth.forms import SUPPORTED
 
 
-class GoalForm(FlaskForm):
+GOAL_TYPES = [
+    ("cap", "Spending Cap — rewarded for staying below the amount"),
+    ("target", "Spending Target — rewarded for reaching the amount"),
+]
+
+
+class _ThresholdFormBase(FlaskForm):
     label = StringField("Label", validators=[DataRequired(), Length(max=120)])
     condition_type = SelectField("Condition", choices=[("total", "Total spend"), ("category", "Specific category")],
                                  validators=[AnyOf(["total", "category"])])
@@ -17,8 +23,13 @@ class GoalForm(FlaskForm):
     threshold_currency = SelectField("Currency", choices=[(c, c) for c in SUPPORTED], validators=[AnyOf(SUPPORTED)])
     start_date = DateField("Start date", validators=[DataRequired()])
     end_date = DateField("End date", validators=[DataRequired()])
+
+
+class GoalForm(_ThresholdFormBase):
+    goal_type = SelectField("Goal type", choices=GOAL_TYPES,
+                            validators=[AnyOf([k for k, _ in GOAL_TYPES])], default="cap")
     submit = SubmitField("Submit goal")
 
 
-class TripWireForm(GoalForm):
+class TripWireForm(_ThresholdFormBase):
     submit = SubmitField("Set trip wire")

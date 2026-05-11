@@ -1,8 +1,9 @@
+from datetime import date
 from decimal import Decimal
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, DateField, SelectField, DecimalField, SubmitField
-from wtforms.validators import DataRequired, Length, NumberRange, AnyOf, Optional
+from wtforms.validators import DataRequired, Length, NumberRange, AnyOf, Optional, ValidationError
 
 from ..auth.forms import SUPPORTED
 
@@ -14,3 +15,7 @@ class SpendForm(FlaskForm):
     description = StringField("Description", validators=[Optional(), Length(max=255)])
     category_id = SelectField("Category", coerce=int, validators=[DataRequired()])
     submit = SubmitField("Add spend")
+
+    def validate_date(self, field):
+        if field.data and field.data > date.today():
+            raise ValidationError("Date cannot be in the future.")

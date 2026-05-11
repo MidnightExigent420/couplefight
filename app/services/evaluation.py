@@ -41,10 +41,14 @@ def expire_stale(today: date | None = None):
     expired_goals = Goal.query.filter(Goal.status.in_(("pending", "active")), Goal.end_date < today).all()
     for g in expired_goals:
         if g.status == "active":
-            # Active goal that wasn't tripped → MET (under threshold for whole window).
             total = _spend_total_in_currency(g.owner_id, g.threshold_currency,
                                              g.start_date, g.end_date, g.category_id)
-            if total <= Decimal(g.threshold):
+            # Cap: met if total stayed at or under threshold. Target: met if total reached threshold.
+            if g.goal_type == "target":
+                met = total >= Decimal(g.threshold)
+            else:
+                met = total <= Decimal(g.threshold)
+            if met:
                 g.status = "met"
                 g.owner.points = (g.owner.points or 0) + 10
                 _notify(g.owner_id, "goal_met", f"Goal met: {g.label}", payload=f"goal:{g.id}")
@@ -82,14 +86,27 @@ def evaluate_for_user(user: User, on_date: date | None = None):
             continue
         spent = _spend_total_in_currency(user.id, g.threshold_currency,
                                          g.start_date, g.end_date, g.category_id)
-        if spent > Decimal(g.threshold):
-            g.status = "expired"
-            _notify(user.id, "goal_busted",
-                    f"Goal busted (over threshold): {g.label}", payload=f"goal:{g.id}")
-            partner = user.couple_group.partner_of(user) if user.couple_group else None
-            if partner:
-                _notify(partner.id, "goal_busted",
-                        f"Partner busted goal: {g.label}", payload=f"goal:{g.id}")
+        if g.goal_type == "target":
+            # Target: hitting the threshold mid-window is an immediate win.
+            if spent >= Decimal(g.threshold):
+                g.status = "met"
+                user.points = (user.points or 0) + 10
+                _notify(user.id, "goal_met",
+                        f"Goal met: {g.label} (+10 pts)", payload=f"goal:{g.id}")
+                partner = user.couple_group.partner_of(user) if user.couple_group else None
+                if partner:
+                    _notify(partner.id, "goal_met",
+                            f"Partner met goal: {g.label}", payload=f"goal:{g.id}")
+        else:
+            # Cap: blowing past the threshold mid-window busts the goal.
+            if spent > Decimal(g.threshold):
+                g.status = "expired"
+                _notify(user.id, "goal_busted",
+                        f"Goal busted (over threshold): {g.label}", payload=f"goal:{g.id}")
+                partner = user.couple_group.partner_of(user) if user.couple_group else None
+                if partner:
+                    _notify(partner.id, "goal_busted",
+                            f"Partner busted goal: {g.label}", payload=f"goal:{g.id}")
 
     # Trip wires targeting this user
     active_tw = TripWire.query.filter_by(target_user_id=user.id, status="active").all()

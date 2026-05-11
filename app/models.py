@@ -124,6 +124,7 @@ class Goal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
     label = db.Column(db.String(120), nullable=False)
+    goal_type = db.Column(db.String(10), nullable=False, default="cap")  # 'cap' | 'target'
     condition_type = db.Column(db.String(20), nullable=False)  # 'total' | 'category'
     category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True)
     threshold = db.Column(db.Numeric(14, 2), nullable=False)

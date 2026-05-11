@@ -73,6 +73,82 @@ def _cumulative(user_id, start: date, end: date, dst_currency: str, category_id:
     return labels, values
 
 
+_RANGE_DAYS = {"7d": 7, "1m": 30, "3m": 90, "6m": 180, "1y": 365}
+
+
+@bp.route("/api/spend-series")
+@login_required
+def spend_series():
+    """Cumulative-spend overlay series for the dashboard chart.
+
+    Returns the user's overall cumulative spend over the requested range plus
+    one cumulative series per Goal (owned by user) and per TripWire (targeting
+    user). Each goal/tripwire series is aligned to the range's labels: ``null``
+    outside its window, cumulative within. All values are in the viewer's
+    preferred currency.
+    """
+    rng = request.args.get("range", "1m")
+    if rng not in _RANGE_DAYS:
+        return jsonify({"error": "bad range"}), 400
+    days = _RANGE_DAYS[rng]
+    end = date.today()
+    start = end - timedelta(days=days - 1)
+    dst = current_user.preferred_currency
+
+    _, overall = _cumulative(current_user.id, start, end, dst, None)
+    labels = [(start + timedelta(days=i)).isoformat() for i in range(days)]
+
+    items = []
+
+    def _series_for(item_start: date, item_end: date, cat_id: int | None):
+        win_start = max(item_start, start)
+        win_end = min(item_end, end)
+        series: list[float | None] = [None] * days
+        if win_start > win_end:
+            return series
+        _, vals = _cumulative(current_user.id, win_start, win_end, dst, cat_id)
+        offset = (win_start - start).days
+        for i, v in enumerate(vals):
+            series[offset + i] = v
+        return series
+
+    goals = Goal.query.filter_by(owner_id=current_user.id).all()
+    for g in goals:
+        cat_id = g.category_id if g.condition_type == "category" else None
+        items.append({
+            "kind": "goal",
+            "id": g.id,
+            "label": g.label,
+            "goal_type": g.goal_type,
+            "threshold": float(convert(g.threshold, g.threshold_currency, dst)),
+            "start": g.start_date.isoformat(),
+            "end": g.end_date.isoformat(),
+            "cumulative": _series_for(g.start_date, g.end_date, cat_id),
+        })
+
+    tripwires = TripWire.query.filter_by(target_user_id=current_user.id).all()
+    for tw in tripwires:
+        cat_id = tw.category_id if tw.condition_type == "category" else None
+        items.append({
+            "kind": "tripwire",
+            "id": tw.id,
+            "label": tw.label,
+            "goal_type": None,
+            "threshold": float(convert(tw.threshold, tw.threshold_currency, dst)),
+            "start": tw.start_date.isoformat(),
+            "end": tw.end_date.isoformat(),
+            "cumulative": _series_for(tw.start_date, tw.end_date, cat_id),
+        })
+
+    return jsonify({
+        "labels": labels,
+        "currency": dst,
+        "overall": overall,
+        "items": items,
+        "range": rng,
+    })
+
+
 @bp.route("/api/chart")
 @login_required
 def chart_data():

@@ -4,13 +4,18 @@
 <div class="grid md:grid-cols-2 gap-6">
   <section class="bg-white p-5 rounded border shadow-sm">
     <h2 class="text-lg font-bold mb-3">Set a goal for yourself</h2>
-    <p class="text-sm text-slate-500 mb-3">Stay under threshold for the whole window to earn 10 points. Requires partner approval.</p>
+    <p class="text-sm text-slate-500 mb-3">Earn 10 points when the goal is met. Requires partner approval.</p>
     <form method="post" class="space-y-3">
       {{ form.hidden_tag() }}
       <div>
         <label class="text-sm font-semibold">Label</label>
         {{ form.label(class="mt-1 w-full border rounded px-3 py-2") }}
         {{ form_errors(form.label) }}
+      </div>
+      <div>
+        <label class="text-sm font-semibold">Goal type</label>
+        {{ form.goal_type(class="mt-1 w-full border rounded px-3 py-2") }}
+        {{ form_errors(form.goal_type) }}
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
@@ -57,9 +62,12 @@
         <li class="border rounded px-3 py-2 text-sm">
           <div class="flex justify-between items-center">
             <span class="font-semibold">{{ g.label }}</span>
-            <span class="flex gap-2 items-center">{{ tier_badge(g.tier) }} {{ status_badge(g.status) }}</span>
+            <span class="flex gap-2 items-center">
+              <span class="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded {% if g.goal_type == 'target' %}bg-sky-100 text-sky-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ 'Target' if g.goal_type == 'target' else 'Cap' }}</span>
+              {{ tier_badge(g.tier) }} {{ status_badge(g.status) }}
+            </span>
           </div>
-          <p class="text-xs text-slate-500">≤ {{ g.threshold }} {{ g.threshold_currency }} ·
+          <p class="text-xs text-slate-500">{{ '≥' if g.goal_type == 'target' else '≤' }} {{ g.threshold }} {{ g.threshold_currency }} ·
             {{ g.condition_type }}{% if g.category %} ({{ g.category.name }}){% endif %} ·
             {{ g.start_date }} → {{ g.end_date }}</p>
         </li>
@@ -72,8 +80,10 @@
     <ul class="space-y-2">
       {% for g in pending_for_me %}
       <li class="border rounded px-3 py-2 text-sm">
-        <p class="font-semibold">{{ g.label }}</p>
-        <p class="text-xs text-slate-500 mb-2">≤ {{ g.threshold }} {{ g.threshold_currency }} ·
+        <p class="font-semibold">{{ g.label }}
+          <span class="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded ml-1 {% if g.goal_type == 'target' %}bg-sky-100 text-sky-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ 'Target' if g.goal_type == 'target' else 'Cap' }}</span>
+        </p>
+        <p class="text-xs text-slate-500 mb-2">{{ '≥' if g.goal_type == 'target' else '≤' }} {{ g.threshold }} {{ g.threshold_currency }} ·
           {{ g.condition_type }}{% if g.category %} ({{ g.category.name }}){% endif %} ·
           {{ g.start_date }} → {{ g.end_date }}</p>
         <div class="flex gap-2">

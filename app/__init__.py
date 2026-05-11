@@ -72,6 +72,9 @@ def create_app():
             return redirect(url_for("dashboard.home"))
         return redirect(url_for("auth.login"))
 
+    from .dashboard.context import activity_panel_context
+    app.context_processor(activity_panel_context)
+
     @app.after_request
     def set_security_headers(response):
         response.headers.setdefault("X-Content-Type-Options", "nosniff")

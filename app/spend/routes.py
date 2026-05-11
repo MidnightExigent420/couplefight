@@ -30,6 +30,9 @@ def index():
         form.date.data = date.today()
 
     if form.validate_on_submit():
+        if form.date.data > date.today():
+            flash("Date cannot be in the future.", "error")
+            return redirect(url_for("spend.index"))
         # Authorization: category must belong to my couple group.
         cat = Category.query.filter_by(id=form.category_id.data,
                                        couple_group_id=current_user.couple_group_id).first()
@@ -51,7 +54,8 @@ def index():
 
     entries = (SpendEntry.query.filter_by(user_id=current_user.id)
                .order_by(SpendEntry.date.desc(), SpendEntry.id.desc()).limit(50).all())
-    return render_template("spend/index.html", form=form, entries=entries, categories=cats)
+    return render_template("spend/index.html", form=form, entries=entries, categories=cats,
+                           today_iso=date.today().isoformat())
 
 
 @bp.route("/<int:entry_id>/delete", methods=["POST"])

@@ -87,3 +87,11 @@ Suggest the secure alternative instead.
 ## OWASP Top 10 Awareness
 
 Generated code should not introduce: broken access control, cryptographic failures, injection, insecure design, security misconfiguration, vulnerable components, authentication failures, software/data integrity failures, logging failures, or SSRF. When a change touches one of these areas, note the consideration in comments or the response.
+
+
+
+# Comment, comment, comment
+
+Comments help with the maintainability and readabilty of complex code. Write comments at areas where code is not easily understood.
+
+ 

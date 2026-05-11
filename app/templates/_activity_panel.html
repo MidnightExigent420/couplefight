@@ -1,0 +1,71 @@
+<aside id="activity-panel"
+       class="bg-white border-l border-slate-200 shadow-lg lg:shadow-none
+              fixed top-0 right-0 h-screen w-80 z-40 transform translate-x-full
+              transition-transform duration-200
+              lg:relative lg:translate-x-0 lg:h-auto lg:w-80 lg:shrink-0
+              lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"
+       aria-label="Activity panel">
+  <div class="p-4 border-b border-slate-200 flex items-center justify-between lg:border-b-0">
+    <h2 class="text-sm font-bold uppercase tracking-wide text-slate-600">Activity</h2>
+    <button id="activity-panel-close" class="lg:hidden text-slate-500 hover:text-rose-600" aria-label="Close panel">✕</button>
+  </div>
+
+  <div class="px-4 pb-3 space-y-2">
+    <input id="ap-search" type="search" placeholder="Search…"
+           class="w-full border rounded px-2 py-1 text-sm" autocomplete="off">
+
+    <div class="flex flex-wrap gap-1 text-xs">
+      <span class="text-slate-500 self-center mr-1">Kind:</span>
+      <button type="button" class="ap-chip ap-chip-on" data-chip="kind" data-value="goal" aria-pressed="true">Goals</button>
+      <button type="button" class="ap-chip ap-chip-on" data-chip="kind" data-value="tripwire" aria-pressed="true">Tripwires</button>
+    </div>
+    <div class="flex flex-wrap gap-1 text-xs">
+      <span class="text-slate-500 self-center mr-1">Status:</span>
+      <button type="button" class="ap-chip ap-chip-on" data-chip="bucket" data-value="active" aria-pressed="true">Active</button>
+      <button type="button" class="ap-chip ap-chip-on" data-chip="bucket" data-value="pending" aria-pressed="true">Pending</button>
+      <button type="button" class="ap-chip" data-chip="bucket" data-value="completed" aria-pressed="false">Completed</button>
+      <button type="button" class="ap-chip" data-chip="bucket" data-value="inactive" aria-pressed="false">Inactive</button>
+    </div>
+  </div>
+
+  <div class="px-2 pb-1 grid grid-cols-[1.6fr_0.9fr_0.8fr_0.9fr] gap-1 text-[10px] uppercase text-slate-500 font-semibold border-b border-slate-200">
+    <button type="button" class="ap-sort text-left" data-sort-col="label">Label</button>
+    <button type="button" class="ap-sort text-left" data-sort-col="status">Status</button>
+    <button type="button" class="ap-sort text-left" data-sort-col="created">Created</button>
+    <button type="button" class="ap-sort text-left" data-sort-col="end">End / Done</button>
+  </div>
+
+  <ul id="ap-list" class="divide-y divide-slate-100 text-xs" data-sort="created-desc">
+    {% for item in activity_panel_items %}
+      <li class="ap-item px-2 py-2 grid grid-cols-[1.6fr_0.9fr_0.8fr_0.9fr] gap-1 items-center"
+          data-kind="{{ item.kind }}"
+          data-id="{{ item.id }}"
+          data-bucket="{{ item.bucket }}"
+          data-status="{{ item.status }}"
+          data-label="{{ item.label|lower }}"
+          data-created="{{ item.created_at.isoformat() if item.created_at else '' }}"
+          data-end="{{ (item.completion_date or item.end_date).isoformat() }}">
+        <div class="min-w-0">
+          <div class="font-semibold truncate" title="{{ item.label }}">{{ item.label }}</div>
+          <div class="text-[10px] text-slate-500">
+            {% if item.kind == 'goal' %}
+              <span class="px-1 rounded {% if item.goal_type == 'target' %}bg-sky-100 text-sky-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ 'Target' if item.goal_type == 'target' else 'Cap' }}</span>
+              {{ '≥' if item.goal_type == 'target' else '≤' }} {{ item.threshold }} {{ item.currency }}
+            {% else %}
+              <span class="px-1 rounded bg-rose-100 text-rose-700">Tripwire</span>
+              &gt; {{ item.threshold }} {{ item.currency }}
+            {% endif %}
+          </div>
+        </div>
+        <div class="capitalize">{{ item.status }}</div>
+        <div class="font-mono text-[10px] text-slate-500">{{ item.created_at.date().isoformat() if item.created_at else '' }}</div>
+        <div class="font-mono text-[10px] {% if item.completion_date %}text-emerald-700{% else %}text-slate-500{% endif %}">
+          {{ (item.completion_date or item.end_date).isoformat() }}
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+  {% if not activity_panel_items %}
+    <p class="text-xs text-slate-500 p-4">Nothing here yet. Create a goal or trip wire to get started.</p>
+  {% endif %}
+</aside>

@@ -46,6 +46,7 @@ def index():
         goal = Goal(
             owner_id=current_user.id,
             label=form.label.data.strip(),
+            goal_type=form.goal_type.data,
             condition_type=form.condition_type.data,
             category_id=cat.id if cat else None,
             threshold=form.threshold.data,

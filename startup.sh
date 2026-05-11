@@ -9,7 +9,7 @@ cd "$(dirname "$0")"
 
 PYTHON="${PYTHON:-python3}"
 VENV_DIR=".venv"
-HOST="${HOST:-127.0.0.1}"
+HOST="${HOST:-0.0.0.0}"
 PORT="${PORT:-5000}"
 
 echo "[1/5] Checking Python..."
