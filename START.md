@@ -1,4 +1,4 @@
-<prompt>
+./s<prompt>
   <task>
     Build a gamified couples spend-tracking web app using Flask. Couples form a group, log their spending, and challenge each other through goals (set on themselves) and trip wires (set by their partner). Goals met and trip wires tripped earn points.
   </task>

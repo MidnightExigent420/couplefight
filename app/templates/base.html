@@ -7,6 +7,10 @@
   <title>{% block title %}CoupleFight{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <!-- date-fns adapter (bundles date-fns) so Chart.js can use a time-based x-axis. -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <!-- Zoom plugin powers wheel zoom, pan, and the +/- zoom buttons. -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0/dist/chartjs-plugin-zoom.min.js"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   <style>
     .ap-chip { padding: 2px 8px; border: 1px solid #cbd5e1; border-radius: 9999px; background: white; color: #475569; }

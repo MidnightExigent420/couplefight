@@ -33,20 +33,21 @@
 <section class="bg-white p-5 rounded border shadow-sm mb-6">
   <div class="flex items-center justify-between mb-3 flex-wrap gap-3">
     <h2 class="text-lg font-bold">Spend visualisation</h2>
-    <div class="flex items-center gap-2">
-      <label for="chart-range" class="text-xs text-slate-500">Range</label>
-      <select id="chart-range" class="border rounded px-2 py-1 text-sm">
-        <option value="7d">7 days</option>
-        <option value="1m" selected>1 month</option>
-        <option value="3m">3 months</option>
-        <option value="6m">6 months</option>
-        <option value="1y">1 year</option>
-      </select>
+    <div id="chart-range-toggle" class="inline-flex gap-1 text-xs font-medium" role="group" aria-label="Chart range">
+      <button type="button" data-range="1w" class="range-pill px-3 py-1 rounded-full text-slate-600 hover:bg-slate-100" aria-pressed="false">1W</button>
+      <button type="button" data-range="1m" class="range-pill px-3 py-1 rounded-full bg-slate-800 text-white" aria-pressed="true">1M</button>
+      <button type="button" data-range="1y" class="range-pill px-3 py-1 rounded-full text-slate-600 hover:bg-slate-100" aria-pressed="false">1Y</button>
     </div>
   </div>
-  <canvas id="spend-chart" height="120"></canvas>
+  <div class="relative">
+    <canvas id="spend-chart" height="120"></canvas>
+    <div class="absolute bottom-2 right-2 flex flex-col gap-1">
+      <button id="zoom-in" type="button" class="w-8 h-8 bg-white border border-slate-300 rounded shadow-sm text-slate-700 hover:bg-slate-100 leading-none" aria-label="Zoom in">+</button>
+      <button id="zoom-out" type="button" class="w-8 h-8 bg-white border border-slate-300 rounded shadow-sm text-slate-700 hover:bg-slate-100 leading-none" aria-label="Zoom out">−</button>
+    </div>
+  </div>
   <p class="text-xs text-slate-500 mt-2">
-    Overall cumulative spend is always shown. Toggle goal &amp; tripwire chips in the activity panel to add or remove overlay lines.
+    Overall cumulative spend is always shown. Scroll to zoom, drag to pan. Toggle goal &amp; tripwire chips in the activity panel to add or remove overlay lines.
   </p>
 </section>
 
