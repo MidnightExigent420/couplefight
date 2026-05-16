@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, abort
+from flask import Blueprint, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
 
 from ..extensions import db
 from ..models import TripWire, Category
 from ..goals.forms import TripWireForm
+from ..services.validators import validate_threshold_form
 
 bp = Blueprint("tripwires", __name__, template_folder="../templates")
 
@@ -23,18 +24,10 @@ def index():
         if not partner:
             flash("You need a partner before setting trip wires.", "error")
             return redirect(url_for("tripwires.index"))
-        if form.end_date.data < form.start_date.data:
-            flash("End date must be on or after start date.", "error")
+        cat, err = validate_threshold_form(form, current_user.couple_group_id)
+        if err:
+            flash(err, "error")
             return redirect(url_for("tripwires.index"))
-        cat = None
-        if form.condition_type.data == "category":
-            if not form.category_id.data:
-                flash("Pick a category.", "error")
-                return redirect(url_for("tripwires.index"))
-            cat = Category.query.filter_by(id=form.category_id.data,
-                                           couple_group_id=current_user.couple_group_id).first()
-            if not cat:
-                abort(403)
 
         tw = TripWire(
             setter_id=current_user.id,

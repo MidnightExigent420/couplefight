@@ -3,26 +3,10 @@ from flask_login import login_required, current_user
 
 from ..extensions import db
 from ..models import Goal, Category, Notification
+from ..services.validators import validate_threshold_form
 from .forms import GoalForm
 
 bp = Blueprint("goals", __name__, template_folder="../templates")
-
-
-def _validate_goal_form(form: GoalForm) -> tuple[bool, Category | None]:
-    if form.end_date.data < form.start_date.data:
-        flash("End date must be on or after start date.", "error")
-        return False, None
-    cat = None
-    if form.condition_type.data == "category":
-        if not form.category_id.data:
-            flash("Pick a category.", "error")
-            return False, None
-        cat = Category.query.filter_by(id=form.category_id.data,
-                                       couple_group_id=current_user.couple_group_id).first()
-        if not cat:
-            flash("Invalid category.", "error")
-            return False, None
-    return True, cat
 
 
 @bp.route("/", methods=["GET", "POST"])
@@ -40,8 +24,9 @@ def index():
         if not partner:
             flash("You need a partner before creating goals.", "error")
             return redirect(url_for("goals.index"))
-        ok, cat = _validate_goal_form(form)
-        if not ok:
+        cat, err = validate_threshold_form(form, current_user.couple_group_id)
+        if err:
+            flash(err, "error")
             return redirect(url_for("goals.index"))
         goal = Goal(
             owner_id=current_user.id,

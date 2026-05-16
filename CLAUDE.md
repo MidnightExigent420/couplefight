@@ -1,93 +1,68 @@
-# Security Guidelines
+# CLAUDE.md
 
-All code generated for this web application must be security-focused. Treat security as a default, not an afterthought.
+Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
-## Core Principles
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
-- **Never trust input.** Validate, sanitize, and encode all data crossing a trust boundary (user input, URL params, headers, cookies, file uploads, third-party APIs).
-- **Least privilege.** Code, services, database users, and API tokens get only the permissions they need.
-- **Fail closed.** On error, deny access and log — never default to allow.
-- **Defense in depth.** Don't rely on a single control. Validate at the edge, in business logic, and at the data layer.
+## 1. Think Before Coding
 
-## Input Handling & Output
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
 
-- Validate all input with allowlists (type, length, format, range). Reject, don't sanitize, when possible.
-- Use parameterized queries / prepared statements / ORMs for all database access. Never concatenate user input into SQL, shell commands, or template strings.
-- Context-aware output encoding: HTML-escape for HTML, JS-escape for inline scripts, URL-encode for URLs.
-- Never use `eval`, `Function()`, `dangerouslySetInnerHTML`, `innerHTML`, or equivalents with user-influenced data.
-- Validate and constrain file uploads: type, size, extension, content; store outside the web root; generate new filenames.
+Before implementing:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
 
-## Authentication & Sessions
+## 2. Simplicity First
 
-- Use a vetted library for auth — do not roll your own.
-- Hash passwords with bcrypt, scrypt, or Argon2id. Never MD5/SHA-1/SHA-256 alone.
-- Session cookies: `HttpOnly`, `Secure`, `SameSite=Lax` or `Strict`, short expiry, rotate on login/privilege change.
-- Implement rate limiting and lockout on auth endpoints.
-- Use MFA where the threat model warrants it.
+**Minimum code that solves the problem. Nothing speculative.**
 
-## Authorization
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
 
-- Check authorization on every request, server-side, on every protected resource — including object-level checks (does _this user_ own _this record_?).
-- Never rely on hidden fields, client-side checks, or obscure URLs as access control.
-- Default deny: explicit allow rules only.
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
-## Secrets & Configuration
+## 3. Surgical Changes
 
-- No secrets in source code, comments, logs, error messages, or client-side code. Ever.
-- Load secrets from environment variables or a secrets manager. Add `.env` and equivalents to `.gitignore`.
-- Rotate credentials; do not reuse them across environments.
-- Different secrets for dev / staging / prod.
+**Touch only what you must. Clean up only your own mess.**
 
-## Transport & Storage
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
 
-- HTTPS everywhere. Set HSTS. Redirect HTTP → HTTPS.
-- Encrypt sensitive data at rest. Use the platform's KMS or a vetted library — not custom crypto.
-- Use modern, library-default algorithms (AES-GCM, ChaCha20-Poly1305). Never DES, RC4, ECB mode, or custom cipher constructions.
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
 
-## HTTP Security Headers
+The test: Every changed line should trace directly to the user's request.
 
-Set on all responses:
+## 4. Goal-Driven Execution
 
-- `Content-Security-Policy` (strict, no `unsafe-inline` / `unsafe-eval` unless justified)
-- `Strict-Transport-Security`
-- `X-Content-Type-Options: nosniff`
-- `Referrer-Policy: strict-origin-when-cross-origin`
-- `X-Frame-Options: DENY` or CSP `frame-ancestors`
+**Define success criteria. Loop until verified.**
 
-## CSRF & CORS
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
 
-- Use anti-CSRF tokens or `SameSite` cookies for state-changing requests.
-- CORS: explicit allowlist of origins. Never `Access-Control-Allow-Origin: *` with credentials.
+For multi-step tasks, state a brief plan:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
 
-## Dependencies
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
-- Pin versions. Use a lockfile.
-- Prefer well-maintained libraries with active security response.
-- Run dependency vulnerability scans (e.g. `npm audit`, `pip-audit`, Dependabot/Snyk equivalents) and treat criticals as blockers.
-- Don't add a dependency to avoid writing five lines.
+---
 
-## Logging & Errors
-
-- Log security events: auth attempts, authz failures, input validation failures, admin actions.
-- Never log secrets, tokens, full PII, full payment data, or session IDs.
-- Show generic error messages to users. Detailed errors and stack traces stay server-side.
-
-## Things to Flag, Not Silently Do
-
-When generating code, **stop and call out** if a request would require:
-
-- Disabling TLS verification, CORS, CSP, or auth checks
-- Storing or transmitting secrets in client code
-- Building SQL/HTML/shell strings from user input
-- Custom cryptography
-- Bypassing an existing authorization check
-
-Suggest the secure alternative instead.
-
-## OWASP Top 10 Awareness
-
-Generated code should not introduce: broken access control, cryptographic failures, injection, insecure design, security misconfiguration, vulnerable components, authentication failures, software/data integrity failures, logging failures, or SSRF. When a change touches one of these areas, note the consideration in comments or the response.
-
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
 
 
 # Comment, comment, comment

@@ -1,3 +1,4 @@
+import logging
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -9,15 +10,17 @@ from ..fx.service import convert
 from ..services.evaluation import expire_stale
 
 bp = Blueprint("dashboard", __name__, template_folder="../templates")
+log = logging.getLogger(__name__)
 
 
 @bp.route("/dashboard")
 @login_required
 def home():
+    # Best-effort housekeeping: never let an expire_stale failure break the dashboard load.
     try:
         expire_stale()
     except Exception:
-        pass
+        log.exception("expire_stale failed during dashboard load")
     partner = None
     invite_url = None
     if current_user.couple_group:
@@ -92,6 +95,7 @@ def spend_series():
         return jsonify({"error": "bad range"}), 400
     days = _RANGE_DAYS[rng]
     end = date.today()
+    # Inclusive range: a 7-day window covers today plus the 6 prior days, not today plus 7 prior.
     start = end - timedelta(days=days - 1)
     dst = current_user.preferred_currency
 

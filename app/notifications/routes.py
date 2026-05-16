@@ -1,3 +1,5 @@
+import logging
+
 from flask import Blueprint, jsonify, request, abort
 from flask_login import login_required, current_user
 
@@ -6,15 +8,18 @@ from ..models import Notification
 from ..services.evaluation import expire_stale
 
 bp = Blueprint("notifications", __name__)
+log = logging.getLogger(__name__)
 
 
 @bp.route("/notifications", methods=["GET"])
 @login_required
 def list_notifications():
     # Lightweight expire check on poll. Cheap because filtered queries hit indexes.
+    # Best-effort: log and roll back on failure so a broken expire pass doesn't 500 the bell poll.
     try:
         expire_stale()
     except Exception:
+        log.exception("expire_stale failed during notifications poll")
         db.session.rollback()
 
     notes = (Notification.query.filter_by(recipient_id=current_user.id)

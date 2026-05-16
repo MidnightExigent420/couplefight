@@ -11,10 +11,6 @@ from .forms import SpendForm
 bp = Blueprint("spend", __name__, template_folder="../templates")
 
 
-def _categories():
-    return Category.query.filter_by(couple_group_id=current_user.couple_group_id).order_by(Category.name).all()
-
-
 @bp.route("/", methods=["GET", "POST"])
 @login_required
 def index():
@@ -23,7 +19,8 @@ def index():
         return redirect(url_for("dashboard.home"))
 
     form = SpendForm()
-    cats = _categories()
+    cats = (Category.query.filter_by(couple_group_id=current_user.couple_group_id)
+            .order_by(Category.name).all())
     form.category_id.choices = [(c.id, c.name) for c in cats]
     if request.method == "GET":
         form.currency.data = current_user.preferred_currency

@@ -18,7 +18,8 @@ def _require_group():
 @login_required
 def create():
     group_id = _require_group()
-    name = (request.form.get("name") or request.json and request.json.get("name") or "").strip()
+    payload = request.get_json(silent=True) or {}
+    name = (request.form.get("name") or payload.get("name") or "").strip()
     if not name or len(name) > 60:
         if request.is_json:
             return jsonify({"error": "invalid name"}), 400

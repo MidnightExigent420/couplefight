@@ -4,7 +4,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, DateField, SelectField, DecimalField, SubmitField, IntegerField
 from wtforms.validators import DataRequired, Length, NumberRange, AnyOf, Optional
 
-from ..auth.forms import SUPPORTED
+from ..auth.forms import currency_choices
 
 
 GOAL_TYPES = [
@@ -20,7 +20,7 @@ class _ThresholdFormBase(FlaskForm):
     category_id = IntegerField("Category", validators=[Optional()])
     threshold = DecimalField("Threshold", places=2, validators=[DataRequired(),
                               NumberRange(min=Decimal("0.01"), max=Decimal("100000000"))])
-    threshold_currency = SelectField("Currency", choices=[(c, c) for c in SUPPORTED], validators=[AnyOf(SUPPORTED)])
+    threshold_currency = SelectField("Currency", choices=currency_choices)
     start_date = DateField("Start date", validators=[DataRequired()])
     end_date = DateField("End date", validators=[DataRequired()])
 
