@@ -1,3 +1,9 @@
+"""TripWire routes: create (no approval needed — active immediately).
+
+Status transitions (`tripped`, `expired`) happen in
+`app/services/evaluation.py`, not here. The form class lives in
+`app/goals/forms.py` because it shares the `_ThresholdFormBase`.
+"""
 from flask import Blueprint, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
 

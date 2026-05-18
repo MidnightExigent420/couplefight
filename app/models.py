@@ -1,3 +1,13 @@
+"""SQLAlchemy models.
+
+Key invariants enforced at the model layer (not the DB):
+- `CoupleGroup` has at most two members (checked procedurally in `is_full`).
+- `User.email` is lowercased and `User.preferred_currency` upper-cased on assignment.
+- `Goal.tier` and `TripWire.tier` are derived `@property` values, never stored.
+- Monetary amounts (`SpendEntry.amount`, `Goal.threshold`, `TripWire.threshold`)
+  are stored in their original currency; conversion happens at read time via
+  `app/fx/service.convert`.
+"""
 import secrets
 from datetime import datetime, date
 
@@ -69,6 +79,8 @@ class User(UserMixin, db.Model):
             _hasher.verify(self.password_hash, password)
         except (VerifyMismatchError, InvalidHashError):
             return False
+        # Opportunistic rehash: if argon2-cffi defaults have changed since this
+        # hash was stored, upgrade it transparently on next successful login.
         if _hasher.check_needs_rehash(self.password_hash):
             self.password_hash = _hasher.hash(password)
         return True

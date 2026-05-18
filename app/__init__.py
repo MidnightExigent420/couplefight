@@ -1,3 +1,10 @@
+"""Flask app factory.
+
+`create_app()` wires up extensions, registers blueprints, installs a context
+processor for the activity panel, and adds an `after_request` that sets
+security headers (CSP, X-Frame-Options, HSTS in prod). Everything else
+(routes, models, services) is imported via the factory.
+"""
 import os
 from datetime import timedelta
 
@@ -45,6 +52,8 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
+        # user_id arrives as a string from the session cookie; catch the conversion
+        # failure rather than the lookup failure so we don't mask DB errors.
         try:
             return db.session.get(User, int(user_id))
         except (TypeError, ValueError):
@@ -80,6 +89,9 @@ def create_app():
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         response.headers.setdefault("X-Frame-Options", "DENY")
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        # 'unsafe-inline' is required because activity-panel chip styles live in a
+        # <style> block in base.html and a couple of templates use inline onsubmit
+        # handlers. Tightening this requires moving them out or hashing each block.
         response.headers.setdefault(
             "Content-Security-Policy",
             "default-src 'self'; "

@@ -1,3 +1,11 @@
+"""Tier classification thresholds for goals/tripwires.
+
+Tier is informational only (badge in the UI) and is NEVER stored in the
+database — `Goal.tier` and `TripWire.tier` are `@property` calls into
+`classify_tier`. Adjusting these thresholds takes effect immediately
+without a migration.
+"""
+
 TIER_THRESHOLDS = {
     "Short": (1, 7),
     "Medium": (8, 90),

@@ -1,3 +1,8 @@
+"""Auth routes: register, login, logout, profile, couple group create/join/leave.
+
+Couple group default categories are seeded here (not in the model) so the
+seed list stays close to the route that creates the group.
+"""
 import logging
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort

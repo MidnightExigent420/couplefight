@@ -1,3 +1,6 @@
+"""Spend CRUD routes. Creating an entry triggers `evaluate_for_user`
+synchronously after commit so any tripped wires / met targets / busted caps
+surface in the next notifications poll without waiting for a background job."""
 from datetime import date
 
 from flask import Blueprint, render_template, redirect, url_for, flash, abort, request

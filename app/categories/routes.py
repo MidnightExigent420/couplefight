@@ -1,3 +1,11 @@
+"""Category creation endpoint.
+
+Single POST `/categories/` that accepts either form-encoded or JSON. The JSON
+path is for the inline 'Add new category' button on the spend form
+(`category_inline.js`); the form path is for ordinary submits. On duplicate
+name within the same couple group it returns the existing category instead
+of erroring — clients can treat 'create' as idempotent.
+"""
 from flask import Blueprint, request, redirect, url_for, flash, jsonify, abort
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError
@@ -31,6 +39,8 @@ def create():
     try:
         db.session.commit()
     except IntegrityError:
+        # UniqueConstraint(couple_group_id, name) hit: treat as idempotent —
+        # return the existing row so the spend form can just select it.
         db.session.rollback()
         existing = Category.query.filter_by(couple_group_id=group_id, name=name).first()
         if request.is_json:

@@ -1,3 +1,5 @@
+"""Auth forms (register, login, profile) plus the shared `currency_choices`
+callable used by every form that needs a currency dropdown."""
 from flask import current_app
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, SubmitField

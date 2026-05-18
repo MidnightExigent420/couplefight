@@ -100,6 +100,8 @@ def evaluate_for_user(user: User, on_date: date | None = None):
         else:
             # Cap: blowing past the threshold mid-window busts the goal.
             if spent > Decimal(g.threshold):
+                # 'expired' here really means 'busted' — see HANDOFF.md section 11.
+                # The notification message uses the user-facing word "busted".
                 g.status = "expired"
                 _notify(user.id, "goal_busted",
                         f"Goal busted (over threshold): {g.label}", payload=f"goal:{g.id}")

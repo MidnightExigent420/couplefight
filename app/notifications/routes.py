@@ -1,3 +1,6 @@
+"""Notifications API: polled every 30s by `notifications.js` to drive the
+bell drawer. Also opportunistically runs `expire_stale()` so windows-ended
+goals/tripwires resolve without a dedicated background worker."""
 import logging
 
 from flask import Blueprint, jsonify, request, abort

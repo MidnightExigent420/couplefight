@@ -1,3 +1,6 @@
+"""Spend entry form. `validate_date` rejects future dates so a fresh entry
+can immediately drive `evaluate_for_user` without needing to model 'pending'
+future spend."""
 from datetime import date
 from decimal import Decimal
 

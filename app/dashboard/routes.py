@@ -1,3 +1,10 @@
+"""Dashboard routes and chart data endpoints.
+
+`home` renders the dashboard shell; `spend_series` is the chart's JSON feed
+(returns 1y of cumulative spend plus per-goal/per-tripwire overlays in the
+viewer's preferred currency). `chart_data` (`/api/chart`) is currently
+unreferenced — see HANDOFF.md section 11.
+"""
 import logging
 from datetime import date, timedelta
 from decimal import Decimal

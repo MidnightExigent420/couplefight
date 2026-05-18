@@ -1,3 +1,9 @@
+"""Goal routes: create (pending, awaits partner approval), approve, reject.
+
+Goals always start in `pending` and need the partner to approve before they
+become `active`. Status transitions to `met`/`expired` are owned by
+`app/services/evaluation.py`, not these routes.
+"""
 from flask import Blueprint, render_template, redirect, url_for, flash, abort, request
 from flask_login import login_required, current_user
 

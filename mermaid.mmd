@@ -1,0 +1,83 @@
+erDiagram
+    CoupleGroup ||--o{ User : "members (≤2)"
+    CoupleGroup ||--o{ Category : has
+    User ||--o{ SpendEntry : logs
+    Category ||--o{ SpendEntry : "categorizes"
+    User ||--o{ Goal : "owns (owner_id)"
+    Category ||--o{ Goal : "optional scope"
+    User ||--o{ TripWire : "sets (setter_id)"
+    User ||--o{ TripWire : "targets (target_user_id)"
+    Category ||--o{ TripWire : "optional scope"
+    User ||--o{ Notification : "receives (recipient_id)"
+    FXRate {
+        string from_currency
+        string to_currency
+        date date
+        numeric rate
+    }
+    CoupleGroup {
+        int id PK
+        string invite_token UK
+        datetime created_at
+    }
+    User {
+        int id PK
+        string email UK
+        string password_hash
+        int couple_group_id FK
+        string preferred_currency
+        int points
+        datetime created_at
+    }
+    Category {
+        int id PK
+        string name
+        int couple_group_id FK
+    }
+    SpendEntry {
+        int id PK
+        int user_id FK
+        numeric amount
+        string original_currency
+        date date
+        string description
+        int category_id FK
+        datetime created_at
+    }
+    Goal {
+        int id PK
+        int owner_id FK
+        string label
+        string goal_type
+        string condition_type
+        int category_id FK
+        numeric threshold
+        string threshold_currency
+        date start_date
+        date end_date
+        string status
+        datetime created_at
+    }
+    TripWire {
+        int id PK
+        int setter_id FK
+        int target_user_id FK
+        string label
+        string condition_type
+        int category_id FK
+        numeric threshold
+        string threshold_currency
+        date start_date
+        date end_date
+        string status
+        datetime created_at
+    }
+    Notification {
+        int id PK
+        int recipient_id FK
+        string type
+        string message
+        string payload
+        bool read
+        datetime created_at
+    }

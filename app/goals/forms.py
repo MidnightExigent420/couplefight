@@ -1,3 +1,10 @@
+"""Goal + TripWire forms.
+
+`_ThresholdFormBase` is the shared schema (label / condition_type /
+category_id / threshold / threshold_currency / start_date / end_date).
+`GoalForm` adds `goal_type`; `TripWireForm` adds nothing — its setter route
+also lives in a separate blueprint but shares this form.
+"""
 from decimal import Decimal
 
 from flask_wtf import FlaskForm
